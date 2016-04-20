@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
@@ -87,16 +88,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static final int NOTIFY_CODE = 0;
-    
+    private int notifyCount = 0;
+
     public void notify(View v){
         Log.v(TAG, "Notify button pressed");
+
+        notifyCount++;
 
         // copied code from Android Developer
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.notification_icon)
                         .setContentTitle("You're on notice")
-                        .setContentText("This is a notification");
+                        .setContentText("This is notification " +notifyCount);
+
+        // what should be considered as MAX, HIGH, DEFAULT, LOW, or MIN priority
+        // also used for sorting dropdown menu
+        // giving a high priority
+        builder.setPriority(NotificationCompat.PRIORITY_HIGH);
+        // if we want it to pop up, it should either vibrate the phone or play a sound
+        builder.setVibrate(new long[]{0, 500, 500, 500});
+        // if we want to set a sound
+        builder.setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
+
 
         // creating intent
         // Why?
@@ -122,7 +136,8 @@ public class MainActivity extends AppCompatActivity {
         builder.setContentIntent(pendingIntent); // what to happen when clicked
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        // mId allows you to update the notification later on.
+        // id code (NOTIFY_CODE) allows you to update the notification later on.
+        // still replace prev notification because of NOTIFY_CODE
         mNotificationManager.notify(NOTIFY_CODE, builder.build()); // issue a new notification
 
     }
