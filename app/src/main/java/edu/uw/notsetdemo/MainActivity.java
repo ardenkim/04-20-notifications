@@ -4,9 +4,11 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
@@ -19,6 +21,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,6 +47,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //shared preferences
+        // get the file xml
+        SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        // tell editors to do the following
+        editor.putString("message", "Hello World");
+        // in order to save those changes
+        editor.commit();
+
+        Log.v(TAG, prefs.getString("message", ""));
     }
 
     public void callNumber(View v) {
@@ -95,51 +109,58 @@ public class MainActivity extends AppCompatActivity {
 
         notifyCount++;
 
-        // copied code from Android Developer
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.notification_icon)
-                        .setContentTitle("You're on notice")
-                        .setContentText("This is notification " +notifyCount);
+        // last thing we did in lecture (if and else)
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(true);
+        boolean showPopup = prefs.getBoolean("pref_show_notification", true);
+        if(showPopup) {
 
-        // what should be considered as MAX, HIGH, DEFAULT, LOW, or MIN priority
-        // also used for sorting dropdown menu
-        // giving a high priority
-        builder.setPriority(NotificationCompat.PRIORITY_HIGH);
-        // if we want it to pop up, it should either vibrate the phone or play a sound
-        builder.setVibrate(new long[]{0, 500, 500, 500});
-        // if we want to set a sound
-        builder.setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
+            // copied code from Android Developer
+            NotificationCompat.Builder builder =
+                    new NotificationCompat.Builder(this)
+                            .setSmallIcon(R.drawable.notification_icon)
+                            .setContentTitle("You're on notice")
+                            .setContentText("This is notification " + notifyCount);
+
+            // what should be considered as MAX, HIGH, DEFAULT, LOW, or MIN priority
+            // also used for sorting dropdown menu
+            // giving a high priority
+            builder.setPriority(NotificationCompat.PRIORITY_HIGH);
+            // if we want it to pop up, it should either vibrate the phone or play a sound
+            builder.setVibrate(new long[]{0, 500, 500, 500});
+            // if we want to set a sound
+            builder.setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
 
 
-        // creating intent
-        // Why?
-        // Notification actions
-        // When notifications appear on your phone, in order to do something, we click on it, and intent gets sent
-        // When I click on a notification, here's what I want to do
-        Intent intent = new Intent(this, SecondActivity.class);
+            // creating intent
+            // Why?
+            // Notification actions
+            // When notifications appear on your phone, in order to do something, we click on it, and intent gets sent
+            // When I click on a notification, here's what I want to do
+            Intent intent = new Intent(this, SecondActivity.class);
 
-        // when I hit back, I want to go to first activity --> fake history
-        // artificial back stack needed!
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+            // when I hit back, I want to go to first activity --> fake history
+            // artificial back stack needed!
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 
-        // adding parents, adding hierarchy history
-        stackBuilder.addParentStack(SecondActivity.class);
+            // adding parents, adding hierarchy history
+            stackBuilder.addParentStack(SecondActivity.class);
 
-        // take the stack and add what intent we want to happend
-        stackBuilder.addNextIntent(intent);
+            // take the stack and add what intent we want to happend
+            stackBuilder.addNextIntent(intent);
 
-        // grab us the pending intent
-        // prev intent standing a line, kick out the guy used to be in line --> instead of 2 new emails, it says 1 new email
-        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+            // grab us the pending intent
+            // prev intent standing a line, kick out the guy used to be in line --> instead of 2 new emails, it says 1 new email
+            PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        builder.setContentIntent(pendingIntent); // what to happen when clicked
+            builder.setContentIntent(pendingIntent); // what to happen when clicked
 
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        // id code (NOTIFY_CODE) allows you to update the notification later on.
-        // still replace prev notification because of NOTIFY_CODE
-        mNotificationManager.notify(NOTIFY_CODE, builder.build()); // issue a new notification
-
+            NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            // id code (NOTIFY_CODE) allows you to update the notification later on.
+            // still replace prev notification because of NOTIFY_CODE
+            mNotificationManager.notify(NOTIFY_CODE, builder.build()); // issue a new notification
+        } else {
+            Toast.makeText(this, "Popup!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -173,6 +194,9 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.menu_item_prefs:
                 Log.v(TAG, "Settings button pressed");
+
+                Intent intent = new Intent(MainActivity.this, SettingsActivity);
+                startActivity(intent);
                 return true;
             case R.id.menu_item_click:
                 Log.v(TAG, "Extra button pressed");
