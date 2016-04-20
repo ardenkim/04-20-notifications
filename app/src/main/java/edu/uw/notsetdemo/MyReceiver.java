@@ -26,5 +26,8 @@ public class MyReceiver extends BroadcastReceiver {
         else if(intent.getAction() == Intent.ACTION_POWER_CONNECTED){
             Toast.makeText(context, "Power connected", Toast.LENGTH_SHORT).show();
         }
+        else if(intent.getAction() == MainActivity.ACTION_SMS_SENT){
+            Toast.makeText(context, "Message sent!", Toast.LENGTH_SHORT).show();
+        }
     }
 }

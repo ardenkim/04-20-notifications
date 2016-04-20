@@ -1,5 +1,6 @@
 package edu.uw.notsetdemo;
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -17,6 +18,8 @@ import android.widget.ImageView;
 public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = "**Main**";
+
+    public static final String ACTION_SMS_SENT = "edu.uw.notsetdemo.ACTION_SMS_SENT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,12 +66,20 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private static final int SMS_SEND_CODE = 2;
     public void sendMessage(View v) {
         Log.v(TAG, "Message button pressed");
 
         SmsManager smsManager = SmsManager.getDefault();
-        smsManager.sendTextMessage("5554", null, "This is a message!", null, null);
 
+        Intent smsIntent = new Intent(ACTION_SMS_SENT);    //implicit intent
+
+        //wrap it up in the pending intent
+        // wrap a letter in a envelop with a envelop to give it to someone who will write me a letter
+        // Actually gets sent off when the manager says its okay
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, SMS_SEND_CODE, smsIntent, 0);
+
+        smsManager.sendTextMessage("5554", null, "This is a message!", null, null);
     }
 
     public void notify(View v){
